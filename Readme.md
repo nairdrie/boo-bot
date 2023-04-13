@@ -24,8 +24,11 @@ SPOTIFY_CLIENT_SECRET=SPOTIFY_CLIENT_SECRET
 ```
 
 Replace `DISCORD_BOT_TOKEN`, `SPOTIFY_CLIENT_ID`, and `SPOTIFY_CLIENT_SECRET` with your own values. If you haven't already:
+
     a. Create a new Discord bot and obtain its token. Follow the instructions in the Discord Developer Portal (https://discord.com/developers/applications) to create a bot and obtain its token.
+    
     b. Create a new Spotify Developer application and obtain its client ID and client secret. Follow the instructions in the Spotify Developer Dashboard (https://developer.spotify.com/dashboard/applications) to create a new application and obtain its client ID and client secret.
+
 6. Run the bot by running `python boo_bot.py` in your terminal or command prompt.
 
 ## Usage
