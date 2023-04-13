@@ -1,0 +1,5 @@
+discord.py==2.2.2
+python-dotenv==1.0.0
+spotipy==2.23.0
+youtube-dl==2021.12.17
+yt-dlp==2023.3.4
