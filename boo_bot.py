@@ -9,6 +9,8 @@ from discord.voice_client import VoiceClient
 from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+import speech_recognition as sr
+import io
 
 # Load environment variables
 load_dotenv()
@@ -50,6 +52,9 @@ ffmpeg_options = {
 
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
+# Dictionary to store song queues for each guild
+queues = {}
+listen_tasks = {}
 
 class YTDLSource(discord.PCMVolumeTransformer):
     def __init__(self, source, *, data, volume=0.5):
@@ -71,8 +76,43 @@ class YTDLSource(discord.PCMVolumeTransformer):
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
-# Dictionary to store song queues for each guild
-queues = {}
+class DiscordPCMStream(io.BytesIO):
+    def __init__(self, guild):
+        self.guild = guild
+        super().__init__(None)
+
+    def read(self, size):
+        data = self.guild.voice_client.source.original.read(size)
+        print(f"Data: {data}, Size: {size}")
+        return data
+
+async def listen_for_speech(ctx):
+    print(-1)
+    if not ctx.guild.voice_client:
+        return
+    r = sr.Recognizer()
+    print(0)
+    while not ctx.bot.is_closed():
+        print(1)
+        if not ctx.voice_client:
+            continue
+        print(2)
+        # ctx.voice_client.start_recording(discord.sinks.MP3Sink(), got_recording, ctx) 
+        await asyncio.sleep(5)
+        print(3)
+        # ctx.voice_client.stop_recording()
+
+
+async def got_recording(sink, ctx):
+    print(4)
+    # Here you can access the recorded files:
+    recorded_users = [
+        f"<@{user_id}>"
+        for user_id, audio in sink.audio_data.items()
+    ]
+    files = [discord.File(audio.file, f"{user_id}.{sink.encoding}") for user_id, audio in sink.audio_data.items()]
+    await ctx.channel.send(f"Finished! Recorded audio for {', '.join(recorded_users)}.", files=files) 
+    return
 
 
 # Function to play the next song in the queue
@@ -161,8 +201,9 @@ async def join(ctx):
     channel = ctx.author.voice.channel
     await channel.connect()
 
-    if not hasattr(ctx.guild, 'listen_task'):
-        ctx.guild.listen_task = bot.loop.create_task(listen_for_speech(ctx))
+    if ctx.guild.id not in listen_tasks:
+        listen_tasks[ctx.guild.id] = ctx.bot.loop.create_task(listen_for_speech(ctx))
+
 
 @bot.command()
 async def leave(ctx):
