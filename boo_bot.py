@@ -73,6 +73,11 @@ class YTDLSource(discord.PCMVolumeTransformer):
             data = data['entries'][0]
 
         filename = data['url'] if stream else ytdl.prepare_filename(data)
+        
+        # Add these two lines to print the filename and FFmpeg command
+        print(f"Filename: {filename}")
+        print(f"FFmpeg command: ffmpeg {ffmpeg_options['before_options']} -i {filename} {ffmpeg_options['options']}")
+
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
 
