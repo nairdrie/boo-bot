@@ -9,7 +9,7 @@ from discord.voice_client import VoiceClient
 from dotenv import load_dotenv
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-import speech_recognition as sr
+# import speech_recognition as sr
 import io
 
 # Load environment variables
@@ -90,7 +90,7 @@ async def listen_for_speech(ctx):
     print(-1)
     if not ctx.guild.voice_client:
         return
-    r = sr.Recognizer()
+    # r = sr.Recognizer()
     print(0)
     while not ctx.bot.is_closed():
         print(1)
