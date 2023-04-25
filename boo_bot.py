@@ -80,6 +80,8 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
 
+    def is_playing(self):
+        return self.original.is_playing()
 
 class DiscordPCMStream(io.BytesIO):
     def __init__(self, guild):
@@ -97,6 +99,10 @@ async def listen_for_speech(ctx):
         return
     # r = sr.Recognizer()
     print(0)
+
+    inactivity_timeout = 60*30  # Inactivity timeout in seconds (30 min)
+    inactive_time = 0
+
     while not ctx.bot.is_closed():
         print(1)
         if not ctx.voice_client:
@@ -106,6 +112,16 @@ async def listen_for_speech(ctx):
         await asyncio.sleep(5)
         print(3)
         # ctx.voice_client.stop_recording()
+
+        # Check for inactivity and disconnect if inactive for the specified timeout
+        if ctx.voice_client.source and ctx.voice_client.source.is_playing():
+            inactive_time = 0  # Reset the inactivity timer if the bot is playing audio
+        else:
+            inactive_time += 5
+
+        if inactive_time >= inactivity_timeout:
+            await ctx.voice_client.disconnect()
+            break
 
 
 async def got_recording(sink, ctx):
