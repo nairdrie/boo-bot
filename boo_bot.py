@@ -329,7 +329,7 @@ async def playnext(ctx, *, url):
         # Add the new song to the queue
         if ctx.guild.id not in queues:
             queues[ctx.guild.id] = []
-        queues[ctx.guild.id].append(url)
+        queues[ctx.guild.id].insert(0, url)
         await ctx.send(f'Added to queue: {url}')
     else:
         # If no song is playing, start playing the requested song
