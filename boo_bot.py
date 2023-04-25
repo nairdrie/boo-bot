@@ -285,6 +285,60 @@ async def play(ctx, *, url):
 
         await ctx.send(f'Now playing: {player.title}')
 
+# Modify the play command to handle Spotify URLs
+@bot.command()
+async def playnext(ctx, *, url):
+    global queues
+
+    # If the bot is not connected to a voice channel, join the user's voice channel
+    if ctx.voice_client is None:
+        channel = ctx.author.voice.channel
+        await channel.connect()
+
+    # Check if the input is a Spotify URL
+    spotify_url_pattern = re.compile(r'(https?://)?(www\.)?open\.spotify\.com/(track|playlist|album)/[A-Za-z0-9]+')
+    if spotify_url_pattern.match(url):
+        try:
+            # Get the content of the Spotify URL
+            spotify_item = sp.track(url) if 'track' in url else sp.playlist(url) if 'playlist' in url else sp.album(url)
+
+            if 'playlist' in url or 'album' in url:
+                # If it's a playlist or an album, add each song to the queue
+                songs = spotify_item['tracks']['items']
+                for song in songs:
+                    song_title = song['track']['name'] if 'playlist' in url else song['name']
+                    artists = ', '.join([artist['name'] for artist in song['track']['artists']]) if 'playlist' in url else ', '.join([artist['name'] for artist in song['artists']])
+                    search_query = f"{song_title} {artists}"
+                    if ctx.guild.id not in queues:
+                        queues[ctx.guild.id] = []
+                    queues[ctx.guild.id].insert(0, search_query)
+                await ctx.send("All songs have been added to the priority queue.")
+                url = queues[ctx.guild.id].pop(0)
+            else:
+                # If it's a song, search it on YouTube
+                song_title = spotify_item['name']
+                artists = ', '.join([artist['name'] for artist in spotify_item['artists']])
+                search_query = f"{song_title} {artists}"
+                url = search_query
+        except Exception as e:
+            await ctx.send(f"An error occurred while handling the Spotify URL: {e}")
+            return
+
+    # Check if a song is already playing
+    if ctx.voice_client.is_playing():
+        # Add the new song to the queue
+        if ctx.guild.id not in queues:
+            queues[ctx.guild.id] = []
+        queues[ctx.guild.id].append(url)
+        await ctx.send(f'Added to queue: {url}')
+    else:
+        # If no song is playing, start playing the requested song
+        async with ctx.typing():
+            player = await YTDLSource.from_url(url, loop=bot.loop, stream=True)
+            ctx.voice_client.play(player, after=lambda e: asyncio.run_coroutine_threadsafe(play_next_song(ctx), bot.loop))
+
+        await ctx.send(f'Now playing: {player.title}')
+
 @bot.command()
 async def pause(ctx):
     ctx.voice_client.pause()
