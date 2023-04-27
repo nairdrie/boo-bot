@@ -4,3 +4,5 @@ spotipy==2.23.0
 youtube-dl==2021.12.17
 yt-dlp==2023.3.4
 PyNaCl==1.5.0
+tiktok-scraper==1.0.3
+moviepy==1.0.3

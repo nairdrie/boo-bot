@@ -11,6 +11,8 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 # import speech_recognition as sr
 import io
+import tiktok_scraper
+from moviepy.editor import *
 
 # Load environment variables
 load_dotenv()
@@ -92,6 +94,21 @@ class DiscordPCMStream(io.BytesIO):
         data = self.guild.voice_client.source.original.read(size)
         print(f"Data: {data}, Size: {size}")
         return data
+
+async def get_tiktok_audio(url):
+    # Download TikTok video
+    video = tiktok_scraper.by_url(url, download=True)
+    video_file = video["collector"][0]["downloaded_video"]
+
+    # Extract audio from the video
+    video_clip = VideoFileClip(video_file)
+    audio_file = f"{os.path.splitext(video_file)[0]}.mp3"
+    video_clip.audio.write_audiofile(audio_file)
+
+    # Remove the video file
+    os.remove(video_file)
+
+    return audio_file
 
 async def listen_for_speech(ctx):
     print(-1)
@@ -269,7 +286,17 @@ async def play(ctx, *, url):
         except Exception as e:
             await ctx.send(f"An error occurred while handling the Spotify URL: {e}")
             return
-
+    
+    # Check if the input is a TikTok URL
+    tiktok_url_pattern = re.compile(r'(https?://)?(www\.)?tiktok\.com/.+')
+    if tiktok_url_pattern.match(url):
+        try:
+            audio_file = await get_tiktok_audio(url)
+            url = audio_file
+        except Exception as e:
+            await ctx.send(f"An error occurred while handling the TikTok URL: {e}")
+            return
+        
     # Check if a song is already playing
     if ctx.voice_client.is_playing():
         # Add the new song to the queue
@@ -324,6 +351,16 @@ async def playnext(ctx, *, url):
             await ctx.send(f"An error occurred while handling the Spotify URL: {e}")
             return
 
+    # Check if the input is a TikTok URL
+    tiktok_url_pattern = re.compile(r'(https?://)?(www\.)?tiktok\.com/.+')
+    if tiktok_url_pattern.match(url):
+        try:
+            audio_file = await get_tiktok_audio(url)
+            url = audio_file
+        except Exception as e:
+            await ctx.send(f"An error occurred while handling the TikTok URL: {e}")
+            return
+        
     # Check if a song is already playing
     if ctx.voice_client.is_playing():
         # Add the new song to the queue
