@@ -13,6 +13,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 import io
 import tiktok_scraper
 from moviepy.editor import *
+from TikTokApi import TikTokApi
 
 # Load environment variables
 load_dotenv()
@@ -291,8 +292,10 @@ async def play(ctx, *, url):
     tiktok_url_pattern = re.compile(r'(https?://)?(www\.)?tiktok\.com/.+')
     if tiktok_url_pattern.match(url):
         try:
-            audio_file = await get_tiktok_audio(url)
-            url = audio_file
+            # Get the content of the TikTok URL
+            api = TikTokApi.get_instance()
+            video_data = api.get_video_by_url(url)
+            url = video_data['playAddr']
         except Exception as e:
             await ctx.send(f"An error occurred while handling the TikTok URL: {e}")
             return
@@ -355,8 +358,10 @@ async def playnext(ctx, *, url):
     tiktok_url_pattern = re.compile(r'(https?://)?(www\.)?tiktok\.com/.+')
     if tiktok_url_pattern.match(url):
         try:
-            audio_file = await get_tiktok_audio(url)
-            url = audio_file
+            # Get the content of the TikTok URL
+            api = TikTokApi.get_instance()
+            video_data = api.get_video_by_url(url)
+            url = video_data['playAddr']
         except Exception as e:
             await ctx.send(f"An error occurred while handling the TikTok URL: {e}")
             return
