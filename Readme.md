@@ -7,6 +7,7 @@ Boo Bot is a Discord bot that can play music from YouTube and Spotify in your vo
 - Python 3.8 or higher
 - `discord` and `spotipy` Python packages
 - FFmpeg (https://ffmpeg.org/download.html)
+- Opus Codec (https://opus-codec.org/)
 - A Spotify Developer account (https://developer.spotify.com/dashboard/applications)
 
 ## Setup
@@ -14,6 +15,7 @@ Boo Bot is a Discord bot that can play music from YouTube and Spotify in your vo
 1. Clone this repository to your local machine.
 2. Install the required Python packages by running `pip install -r requirements.txt` in your terminal or command prompt.
 3. Install FFmpeg from the link provided above.
+4. Install the Opus library (see link above) (e.g. sudo apt install libopus-dev on Ubuntu)
 4. Create a new file named `.env` in the root directory of the project.
 5. In the `.env` file, add the following lines:
 
