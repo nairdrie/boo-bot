@@ -259,6 +259,29 @@ async def mcstart(ctx):
         await ctx.send("Minecraft server is in an unknown state.")
         return
 
+@bot.command()
+async def mcstop(ctx):
+    ec2 = boto3.resource('ec2')
+    # list_instances()
+    instance = ec2.Instance('i-0e161f670734cdd2d')
+    # check the instance state
+    if(instance.state['Name'] == 'running'):
+        instance.stop()
+        await ctx.send("Minecraft server is stopping...")
+        return
+    elif(instance.state['Name'] == 'pending'):
+        await ctx.send("Minecraft server is starting...")
+        return
+    elif(instance.state['Name'] == 'stopping'):
+        await ctx.send("Minecraft server is stopping...")
+        return
+    elif(instance.state['Name'] == 'stopped'):
+        await ctx.send("Minecraft server is already stopped.")
+        return
+    else:
+        await ctx.send("Minecraft server is in an unknown state.")
+        return
+
 def list_instances():
     ec2 = boto3.resource('ec2')
 
