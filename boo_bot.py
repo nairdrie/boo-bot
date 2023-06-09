@@ -14,6 +14,7 @@ import io
 import tiktok_scraper
 from moviepy.editor import *
 from TikTokApi import TikTokApi
+import boto3
 
 # Load environment variables
 load_dotenv()
@@ -234,6 +235,35 @@ async def shuffle(ctx):
     else:
         await ctx.send("There is no queue to shuffle.")
 
+@bot.command()
+async def mcstart(ctx):
+    # Start the Minecraft server by starting the ec2 instance
+    ec2 = boto3.resource('ec2')
+    # list_instances()
+    instance = ec2.Instance('i-0e161f670734cdd2d')
+    # check the instance state
+    if(instance.state['Name'] == 'running'):
+        await ctx.send("Minecraft server is already running.")
+        return
+    elif(instance.state['Name'] == 'pending'):
+        await ctx.send("Minecraft server is starting...")
+        return
+    elif(instance.state['Name'] == 'stopping'):
+        await ctx.send("Minecraft server is stopping...")
+        return
+    elif(instance.state['Name'] == 'stopped'):
+        instance.start()
+        await ctx.send("Minecraft server is starting...")
+        return
+    else:
+        await ctx.send("Minecraft server is in an unknown state.")
+        return
+
+def list_instances():
+    ec2 = boto3.resource('ec2')
+
+    for instance in ec2.instances.all():
+        print(f'ID: {instance.id}, State: {instance.state["Name"]}, Type: {instance.instance_type}')
 
 @bot.command()
 async def join(ctx):
